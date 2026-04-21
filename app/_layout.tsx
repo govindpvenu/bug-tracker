@@ -23,6 +23,7 @@ export default function RootLayout() {
               contentStyle: {
                 backgroundColor: theme.colors.background,
               },
+              headerShown: false,
               headerStyle: {
                 backgroundColor: theme.colors.background,
               },
