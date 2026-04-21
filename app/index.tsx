@@ -1,12 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
-import { useTodos } from "@/hooks/use-todos";
+import { useBugs } from "@/hooks/use-bugs";
 import {
   ArrowUpRight,
   Check,
   Circle,
-  FolderKanban,
+  Bug,
   Plus,
   Trash2,
 } from "lucide-react-native";
@@ -24,7 +24,7 @@ type FilterKey = "all" | "active" | "completed";
 const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "all", label: "All" },
   { key: "active", label: "Open" },
-  { key: "completed", label: "Done" },
+  { key: "completed", label: "Closed" },
 ];
 
 function formatCreatedAt(value: string) {
@@ -50,17 +50,17 @@ function formatCreatedAt(value: string) {
 function EmptyState({ filter }: { filter: FilterKey }) {
   const title =
     filter === "completed"
-      ? "Nothing completed yet"
+      ? "No closed bugs"
       : filter === "active"
-        ? "No open work"
-        : "No tasks yet";
+        ? "No open bugs"
+        : "No bugs reported";
 
   const description =
     filter === "completed"
-      ? "Close a few tasks and they will land here."
+      ? "Resolve a few issues and they will land here."
       : filter === "active"
-        ? "Your queue is clear for now."
-        : "Add the first item to start shaping today's queue.";
+        ? "Your backlog is clear for now."
+        : "Log the first bug to start tracking issues in this workspace.";
 
   return (
     <View className="overflow-hidden rounded-[18px] border border-border bg-card">
@@ -73,7 +73,7 @@ function EmptyState({ filter }: { filter: FilterKey }) {
       </View>
       <View className="items-center px-6 py-12">
         <View className="mb-4 h-14 w-14 items-center justify-center rounded-lg border border-border bg-background">
-          <FolderKanban size={26} className="text-foreground" strokeWidth={1.75} />
+          <Bug size={26} className="text-foreground" strokeWidth={1.75} />
         </View>
         <Text className="text-center text-xl font-semibold text-foreground">
           {title}
@@ -111,27 +111,27 @@ function StatCard({
 export default function Index() {
   const [title, setTitle] = useState("");
   const [filter, setFilter] = useState<FilterKey>("all");
-  const { todos, addTodo, toggleTodo, deleteTodo } = useTodos();
+  const { bugs, addBug, toggleBug, deleteBug } = useBugs();
 
-  const completedCount = todos.filter((todo) => todo.completed).length;
-  const activeCount = todos.length - completedCount;
-  const completionRatio = todos.length === 0 ? 0 : completedCount / todos.length;
-  const completionWidth = `${Math.max(completionRatio * 100, todos.length ? 8 : 0)}%`;
-  const filteredTodos = todos.filter((todo) => {
+  const closedCount = bugs.filter((bug) => bug.closed).length;
+  const openCount = bugs.length - closedCount;
+  const completionRatio = bugs.length === 0 ? 0 : closedCount / bugs.length;
+  const completionWidth = `${Math.max(completionRatio * 100, bugs.length ? 8 : 0)}%`;
+  const filteredBugs = bugs.filter((bug) => {
     if (filter === "active") {
-      return !todo.completed;
+      return !bug.closed;
     }
 
     if (filter === "completed") {
-      return todo.completed;
+      return bug.closed;
     }
 
     return true;
   });
-  const canAddTodo = title.trim().length > 0;
+  const canAddBug = title.trim().length > 0;
 
-  const handleAddTodo = () => {
-    if (!addTodo(title)) {
+  const handleAddBug = () => {
+    if (!addBug(title)) {
       return;
     }
 
@@ -146,7 +146,7 @@ export default function Index() {
       <FlatList
         contentInsetAdjustmentBehavior="automatic"
         contentContainerClassName="px-4 pb-10 pt-4"
-        data={filteredTodos}
+        data={filteredBugs}
         keyExtractor={(item) => item.id}
         keyboardShouldPersistTaps="handled"
         ListEmptyComponent={<EmptyState filter={filter} />}
@@ -173,11 +173,11 @@ export default function Index() {
                   </View>
                 </View>
                 <Text className="mt-5 max-w-xs text-[34px] font-semibold leading-[38px] tracking-[-1.6px] text-foreground">
-                  Build a sharper queue for the day.
+                  Catch regressions before they pile up.
                 </Text>
                 <Text className="mt-3 max-w-sm text-sm leading-6 text-muted-foreground">
-                  A Vercel-inspired task surface: clean hierarchy, minimal chrome,
-                  and fast triage for what still needs attention.
+                  A focused bug board for quick capture, fast triage, and clean
+                  visibility into what is still open.
                 </Text>
               </View>
 
@@ -185,13 +185,13 @@ export default function Index() {
                 <View className="flex-row gap-3">
                   <StatCard
                     label="Total"
-                    value={String(todos.length)}
-                    caption="Items currently tracked"
+                    value={String(bugs.length)}
+                    caption="Bugs currently tracked"
                   />
                   <StatCard
                     label="Open"
-                    value={String(activeCount)}
-                    caption="Still waiting on action"
+                    value={String(openCount)}
+                    caption="Still waiting on a fix"
                   />
                 </View>
 
@@ -199,7 +199,7 @@ export default function Index() {
                   <View className="flex-row items-center justify-between">
                     <View>
                       <Text className="text-[11px] font-medium uppercase tracking-[1.6px] text-muted-foreground">
-                        Completion
+                        Resolution
                       </Text>
                       <Text className="mt-2 text-2xl font-semibold tracking-[-1px] text-foreground">
                         {Math.round(completionRatio * 100)}%
@@ -207,10 +207,10 @@ export default function Index() {
                     </View>
                     <View className="items-end">
                       <Text className="text-sm text-foreground">
-                        {completedCount} shipped
+                        {closedCount} closed
                       </Text>
                       <Text className="mt-1 text-xs text-muted-foreground">
-                        {activeCount} remaining
+                        {openCount} still open
                       </Text>
                     </View>
                   </View>
@@ -224,21 +224,21 @@ export default function Index() {
 
                 <View className="rounded-[16px] border border-border bg-background px-4 py-4">
                   <Text className="text-[11px] font-medium uppercase tracking-[1.6px] text-muted-foreground">
-                    Quick capture
+                    Report bug
                   </Text>
                   <View className="mt-4 flex-row items-center gap-3">
                     <Input
                       className="flex-1"
                       onChangeText={setTitle}
-                      onSubmitEditing={handleAddTodo}
-                      placeholder="Add a task, issue, or reminder"
+                      onSubmitEditing={handleAddBug}
+                      placeholder="Describe the bug or regression"
                       returnKeyType="done"
                       value={title}
                     />
                     <Button
                       className="rounded-lg"
-                      disabled={!canAddTodo}
-                      onPress={handleAddTodo}
+                      disabled={!canAddBug}
+                      onPress={handleAddBug}
                       size="icon"
                     >
                       <Plus
@@ -256,18 +256,18 @@ export default function Index() {
               <View className="flex-row items-center justify-between">
                 <View>
                   <Text className="text-[11px] font-medium uppercase tracking-[1.6px] text-muted-foreground">
-                    Queue
+                    Bug queue
                   </Text>
                   <Text className="mt-2 text-xl font-semibold tracking-[-0.8px] text-foreground">
                     {filter === "all"
-                      ? "All tasks"
+                      ? "All bugs"
                       : filter === "active"
-                        ? "Open tasks"
-                        : "Completed tasks"}
+                        ? "Open bugs"
+                        : "Closed bugs"}
                   </Text>
                 </View>
                 <Text className="text-sm text-muted-foreground">
-                  {filteredTodos.length} visible
+                  {filteredBugs.length} visible
                 </Text>
               </View>
 
@@ -306,15 +306,15 @@ export default function Index() {
             <View className="flex-row items-start gap-3 px-4 py-4">
               <Pressable
                 accessibilityRole="checkbox"
-                accessibilityState={{ checked: item.completed }}
+                accessibilityState={{ checked: item.closed }}
                 className={
-                  item.completed
+                  item.closed
                     ? "mt-0.5 h-11 w-11 items-center justify-center rounded-lg border border-foreground bg-foreground"
                     : "mt-0.5 h-11 w-11 items-center justify-center rounded-lg border border-border bg-background"
                 }
-                onPress={() => toggleTodo(item.id)}
+                onPress={() => toggleBug(item.id)}
               >
-                {item.completed ? (
+                {item.closed ? (
                   <Check
                     size={18}
                     className="text-background"
@@ -329,11 +329,11 @@ export default function Index() {
                 )}
               </Pressable>
 
-              <Pressable className="flex-1" onPress={() => toggleTodo(item.id)}>
+              <Pressable className="flex-1" onPress={() => toggleBug(item.id)}>
                 <View className="flex-row items-center justify-between gap-3">
                   <Text
                     className={
-                      item.completed
+                      item.closed
                         ? "flex-1 text-base font-medium leading-6 text-muted-foreground line-through"
                         : "flex-1 text-base font-medium leading-6 text-foreground"
                     }
@@ -342,19 +342,19 @@ export default function Index() {
                   </Text>
                   <View
                     className={
-                      item.completed
+                      item.closed
                         ? "rounded-md border border-border bg-secondary px-2.5 py-1"
                         : "rounded-md border border-border bg-background px-2.5 py-1"
                     }
                   >
                     <Text
                       className={
-                        item.completed
+                        item.closed
                           ? "text-[11px] font-medium uppercase tracking-[1.2px] text-foreground"
                           : "text-[11px] font-medium uppercase tracking-[1.2px] text-muted-foreground"
                       }
                     >
-                      {item.completed ? "Done" : "Open"}
+                      {item.closed ? "Closed" : "Open"}
                     </Text>
                   </View>
                 </View>
@@ -365,7 +365,7 @@ export default function Index() {
 
               <Button
                 className="rounded-lg"
-                onPress={() => deleteTodo(item.id)}
+                onPress={() => deleteBug(item.id)}
                 size="icon"
                 variant="ghost"
               >

@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "expo-todo-app",
-    "slug": "expo-todo-app",
+    "name": "expo-bug-tracker",
+    "slug": "expo-bug-tracker",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "todoapp",
+    "scheme": "bugtracker",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
