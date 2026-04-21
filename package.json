@@ -1,5 +1,5 @@
 {
-  "name": "expo-bug-tracker",
+  "name": "bug-tracker",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
