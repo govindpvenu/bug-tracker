@@ -2,16 +2,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Text } from "@/components/ui/text";
 import { useBugs } from "@/hooks/use-bugs";
-import {
-  ArrowUpRight,
-  Check,
-  Circle,
-  Bug,
-  Plus,
-  Trash2,
-} from "lucide-react-native";
+import { Bug, Check, Circle, Plus, Trash2 } from "lucide-react-native";
 import { useState } from "react";
 import {
+  type DimensionValue,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -32,7 +26,7 @@ function formatCreatedAt(value: string) {
   const now = new Date();
   const diffInHours = Math.max(
     0,
-    Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60))
+    Math.floor((now.getTime() - createdAt.getTime()) / (1000 * 60 * 60)),
   );
 
   if (diffInHours < 1) {
@@ -65,8 +59,8 @@ function EmptyState({ filter }: { filter: FilterKey }) {
   return (
     <View className="overflow-hidden rounded-[18px] border border-border bg-card">
       <View className="border-b border-border px-5 py-4">
-        <View className="w-28 rounded-md border border-border bg-background px-3 py-1">
-          <Text className="text-[11px] font-medium uppercase tracking-[1.6px] text-muted-foreground">
+        <View className="w-32 rounded-md border border-border bg-background px-3 py-1">
+          <Text className="text-[11px] flex-nowrap flex font-medium uppercase tracking-[1.6px] text-muted-foreground">
             Empty state
           </Text>
         </View>
@@ -103,7 +97,9 @@ function StatCard({
       <Text className="mt-3 text-3xl font-semibold tracking-[-1px] text-foreground">
         {value}
       </Text>
-      <Text className="mt-1 text-xs leading-5 text-muted-foreground">{caption}</Text>
+      <Text className="mt-1 text-xs leading-5 text-muted-foreground">
+        {caption}
+      </Text>
     </View>
   );
 }
@@ -116,7 +112,7 @@ export default function Index() {
   const closedCount = bugs.filter((bug) => bug.closed).length;
   const openCount = bugs.length - closedCount;
   const completionRatio = bugs.length === 0 ? 0 : closedCount / bugs.length;
-  const completionWidth = `${Math.max(completionRatio * 100, bugs.length ? 8 : 0)}%`;
+  const completionWidth: DimensionValue = `${Math.max(completionRatio * 100, bugs.length ? 8 : 0)}%`;
   const filteredBugs = bugs.filter((bug) => {
     if (filter === "active") {
       return !bug.closed;
@@ -162,11 +158,6 @@ export default function Index() {
                     </Text>
                   </View>
                   <View className="flex-row items-center gap-2 rounded-md border border-border bg-background px-3 py-1">
-                    <ArrowUpRight
-                      size={14}
-                      className="text-muted-foreground"
-                      strokeWidth={2}
-                    />
                     <Text className="text-xs text-muted-foreground">
                       Local sync
                     </Text>
@@ -369,7 +360,11 @@ export default function Index() {
                 size="icon"
                 variant="ghost"
               >
-                <Trash2 size={18} className="text-muted-foreground" strokeWidth={2} />
+                <Trash2
+                  size={18}
+                  className="text-muted-foreground"
+                  strokeWidth={2}
+                />
               </Button>
             </View>
           </View>
